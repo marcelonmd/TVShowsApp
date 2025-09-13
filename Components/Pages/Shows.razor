@@ -1,0 +1,300 @@
+﻿@page "/"
+@page "/shows"
+
+@rendermode InteractiveServer
+@implements IDisposable
+@using System.Threading
+@inject IJSRuntime JSRuntime
+
+
+<PageTitle>@Localizer["AppName"]</PageTitle>
+
+<h3 style="margin:1rem">@Localizer["AppName"]</h3>
+
+<div class="search-container">
+    <input type="text"
+           class="form-control"
+           placeholder="@Localizer["TypeToSearch"]"
+           @bind="searchQuery"
+           @oninput="HandleSearchInput"
+           @onkeydown="HandleSearchKeyDown" />
+    <small class="form-text text-muted">@searchStatusMessage</small>
+</div>
+
+
+@if (shows == null || isSearchingInitial)
+{
+    <p style="margin:1rem">@Localizer["LoadingShows"]</p>
+}
+else if (!shows.Any() && string.IsNullOrWhiteSpace(lastSearchTerm))
+{
+    <p style="margin:1rem">@Localizer["NoShowsFound"]</p>
+}
+else if (!shows.Any() && !string.IsNullOrWhiteSpace(lastSearchTerm))
+{
+    <p style="margin:1rem">@Localizer["NoShowFoundBySearch"]</p>
+}
+else
+{
+    <div class="show-grid">
+        @foreach (var show in shows)
+        {
+            <div class="show-card">
+                <a href="/show/@show.Id" class="show-image-link">
+                    <img src="@show.Image?.Medium" alt="@show.Name" />
+                </a>
+
+                <div class="card-title-wrapper">
+                    <a href="/show/@show.Id"><h4>@show.Name</h4></a>
+
+                    <div class="show-rating-header">
+                        <button class="favorite-button @(favoritedShowIds.Contains(show.Id) ? "favorited" : "")"
+                                @onclick="(() => ToggleFavorite(show))">
+                            <span class="oi oi-heart"></span>
+                        </button>
+
+                        @if (show.Rating?.Average.HasValue == true)
+                        {
+                            <span class="oi oi-star" aria-hidden="true"></span>
+                            <span>@show.Rating.Average.Value.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="show-details">
+                    @if (show.Genres != null && show.Genres.Any())
+                    {
+                        <div class="show-genres">
+                            @foreach (var genre in show.Genres)
+                            {
+                                GenreType genreType = Enum.TryParse(genre.Replace(" ", ""), true, out GenreType parsed) ? parsed : GenreType.Unknown;
+                                <span class="genre-tag"
+                                      style="background-color:@TVShows.Utils.GenreColors.GetBackgroundColor(genreType);
+                                                                                                                     border-color:@TVShows.Utils.GenreColors.GetBorderColor(genreType);">
+                                    @genre
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (isLoadingMoreShows)
+    {
+        <p style="margin:1rem; text-align: center;">@Localizer["LoadingMoreShows"]</p>
+    }
+    else if (!hasMoreShows && string.IsNullOrWhiteSpace(searchQuery))
+    {
+        <p style="margin:1rem; text-align: center; color: #888;">@Localizer["NoMoreShows"]</p>
+    }
+}
+
+@code {
+    private List<Show> shows = new List<Show>();
+    private string searchQuery = string.Empty;
+    private string lastSearchTerm = string.Empty;
+    private string searchStatusMessage = string.Empty;
+    private bool isSearching = false;
+    private bool isSearchingInitial = true;
+
+    private int currentPage = 1;
+    private bool isLoadingMoreShows = false;
+    private bool hasMoreShows = true;
+
+    private Timer? debounceTimer;
+    private CancellationTokenSource? searchCts;
+
+    private DotNetObjectReference<Shows>? dotNetRef;
+    private bool _firstRenderInteractive = true;
+
+    private HashSet<int> favoritedShowIds = new HashSet<int>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var favorites = await FavoriteService.GetFavoriteShowsAsync();
+        favoritedShowIds = new HashSet<int>(favorites.Select(f => f.Id));
+
+        await LoadShowsPage(1);
+        isSearchingInitial = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && _firstRenderInteractive)
+        {
+            _firstRenderInteractive = false;
+            dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("scrollMonitor.initialize", dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task LoadMoreShows()
+    {
+        if (string.IsNullOrWhiteSpace(searchQuery) && hasMoreShows && !isLoadingMoreShows)
+        {
+            isLoadingMoreShows = true;
+            StateHasChanged();
+
+            currentPage++;
+            await LoadShowsPage(currentPage);
+
+            isLoadingMoreShows = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadShowsPage(int page)
+    {
+        var newShows = await TvMazeService.GetShowsByPageAsync(page);
+
+        if (newShows != null && newShows.Any())
+        {
+            if (page == 1)
+            {
+                shows = newShows;
+            }
+            else
+            {
+                foreach (var show in newShows)
+                {
+                    if (!shows.Any(s => s.Id == show.Id))
+                    {
+                        shows.Add(show);
+                    }
+                }
+            }
+            hasMoreShows = true;
+        }
+        else
+        {
+            hasMoreShows = false;
+            if (page == 1)
+            {
+                shows = new List<Show>();
+            }
+        }
+    }
+
+    private void HandleSearchInput(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+
+        debounceTimer?.Dispose();
+
+        if (string.IsNullOrWhiteSpace(searchQuery))
+        {
+            lastSearchTerm = string.Empty;
+            isSearching = false;
+            searchStatusMessage = string.Empty;
+
+            currentPage = 1;
+            hasMoreShows = true;
+            isLoadingMoreShows = false;
+
+            _ = InvokeAsync(async () =>
+            {
+                await LoadShowsPage(1);
+                StateHasChanged();
+            });
+            return;
+        }
+
+        debounceTimer = new Timer(SearchShows, null, 1000, Timeout.Infinite);
+    }
+    private void HandleSearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            debounceTimer?.Dispose();
+            _ = ExecuteSearchAsync();
+        }
+    }
+    private async Task ExecuteSearchAsync()
+    {
+        searchCts?.Cancel();
+        searchCts = new CancellationTokenSource();
+        var ct = searchCts.Token;
+
+        if (isSearching || string.IsNullOrWhiteSpace(searchQuery)) return;
+
+        try
+        {
+            isSearching = true;
+            lastSearchTerm = searchQuery;
+            searchStatusMessage = string.Format(Localizer["SearchingFor"], searchQuery);
+            StateHasChanged();
+
+            currentPage = 1;
+            hasMoreShows = false;
+            isLoadingMoreShows = false;
+
+            var results = await TvMazeService.SearchShowsByNameAsync(lastSearchTerm);
+
+            if (!ct.IsCancellationRequested)
+            {
+                shows = results ?? new List<Show>();
+                isSearching = false;
+                searchStatusMessage = string.Empty;
+                StateHasChanged();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            isSearching = false;
+        }
+    }
+
+    private async void SearchShows(object? state)
+    {
+        await InvokeAsync(async () =>
+        {
+            if (isSearching || string.IsNullOrWhiteSpace(searchQuery)) return;
+
+            isSearching = true;
+            lastSearchTerm = searchQuery;
+            searchStatusMessage = string.Format(Localizer["SearchingFor"], searchQuery);
+            StateHasChanged();
+
+            currentPage = 1;
+            hasMoreShows = false;
+            isLoadingMoreShows = false;
+
+            shows = await TvMazeService.SearchShowsByNameAsync(lastSearchTerm);
+
+            isSearching = false;
+            searchStatusMessage = string.Empty;
+            StateHasChanged();
+        });
+    }
+
+    private async Task ToggleFavorite(Show show)
+    {
+        if (favoritedShowIds.Contains(show.Id))
+        {
+            await FavoriteService.RemoveFavoriteShowAsync(show.Id);
+            favoritedShowIds.Remove(show.Id);
+        }
+        else
+        {
+            await FavoriteService.AddFavoriteShowAsync(show);
+            favoritedShowIds.Add(show.Id);
+        }
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        debounceTimer?.Dispose();
+        if (dotNetRef != null)
+        {
+            _ = JSRuntime.InvokeVoidAsync("scrollMonitor.dispose");
+            dotNetRef.Dispose();
+        }
+    }
+}

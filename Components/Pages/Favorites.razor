@@ -1,0 +1,97 @@
+﻿@page "/favorites"
+@rendermode InteractiveServer
+@using TVShows.Models
+@using TVShows.Services
+@using TVShows.Utils
+@inject FavoriteService FavoriteService
+<PageTitle>@Localizer["FavoriteShows"]</PageTitle>
+
+<h3 class="page-title">@Localizer["FavoriteShows"]</h3>
+
+@if (favoriteShows == null)
+{
+    <p class="loading-text">@Localizer["LoadingFavorites"]</p>
+}
+else if (!favoriteShows.Any())
+{
+    <p class="loading-text">@Localizer["NoFavoritesAdded"]</p>
+}
+else
+{
+    <div class="show-grid">
+        @foreach (var favShow in favoriteShows)
+        {
+            <div class="show-card @(fadingOutShowIds.Contains(favShow.Id) ? "fading-out" : "")">
+                <a href="/show/@favShow.Id" class="show-image-link">
+                    <img src="@favShow.MediumImage" alt="@favShow.Name" />
+                </a>
+
+                <div class="card-title-wrapper">
+                    <a href="/show/@favShow.Id"><h4>@favShow.Name</h4></a>
+
+                    <div class="show-rating-header">
+                        <button class="favorite-button @(favoriteShowIds.Contains(favShow.Id) ? "favorited" : "")"
+                                @onclick="() => ToggleFavorite(favShow)">
+                            <span class="oi oi-heart"></span>
+                        </button>
+
+                        @if (favShow.RatingAverage.HasValue)
+                        {
+                            <span class="oi oi-star" aria-hidden="true"></span>
+                            <span>@favShow.RatingAverage.Value.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)</span>
+                        }
+                    </div>
+                </div>
+
+                @if (favShow.Genres != null && favShow.Genres.Any())
+                {
+                    <div class="show-genres">
+                        @foreach (var genre in favShow.Genres)
+                        {
+                            GenreType genreType = Enum.TryParse(genre.Replace(" ", ""), true, out GenreType parsed) ? parsed : GenreType.Unknown;
+                            <span class="genre-tag"
+                                  style="background-color:@TVShows.Utils.GenreColors.GetBackgroundColor(genreType);
+                                                         border-color:@TVShows.Utils.GenreColors.GetBorderColor(genreType);">
+                                @genre
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<FavoriteShow> favoriteShows;
+    private HashSet<int> favoriteShowIds = new HashSet<int>();
+    private HashSet<int> fadingOutShowIds = new HashSet<int>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFavorites();
+    }
+
+    private async Task LoadFavorites()
+    {
+        favoriteShows = await FavoriteService.GetFavoriteShowsAsync();
+        favoriteShowIds = favoriteShows != null
+            ? new HashSet<int>(favoriteShows.Select(f => f.Id))
+            : new HashSet<int>();
+    }
+
+    private async Task ToggleFavorite(FavoriteShow favShow)
+    {
+        if (!favoriteShowIds.Contains(favShow.Id))
+            return;
+
+        fadingOutShowIds.Add(favShow.Id);
+
+        await Task.Delay(500);
+
+        await FavoriteService.RemoveFavoriteShowAsync(favShow.Id);
+        favoriteShowIds.Remove(favShow.Id);
+        favoriteShows.RemoveAll(f => f.Id == favShow.Id);
+        fadingOutShowIds.Remove(favShow.Id);
+    }
+}

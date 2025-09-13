@@ -1,0 +1,95 @@
+﻿@page "/recent-shows"
+@rendermode InteractiveServer
+@implements IDisposable
+
+@using System.Threading
+@inject IJSRuntime JSRuntime
+
+<PageTitle>@Localizer["RecentlyViewedShows"]</PageTitle>
+<h3 class="page-title">@Localizer["RecentlyViewedShows"]</h3>
+
+@if (recentShows == null)
+{
+    <p class="page-title">@Localizer["LoadingRecentlyViewedShows"]</p>
+}
+else if (!recentShows.Any())
+{
+    <p class="page-title">@Localizer["NoRecentlyViewedShows"]</p>
+    <p class="empty-message">@Localizer["NoRecentlyViewedShowsHint"]</p>
+}
+else
+{
+    <div class="show-grid">
+        @foreach (var recentShow in recentShows)
+        {
+            <div class="show-card">
+                <a href="/show/@recentShow.Id" class="show-image-link">
+                    <img src="@recentShow.MediumImage" alt="@recentShow.Name" />
+                </a>
+
+                <div class="card-title-wrapper">
+                    <a href="/show/@recentShow.Id"><h4>@recentShow.Name</h4></a>
+
+                    <div class="show-rating-header">
+                        @if (recentShow.RatingAverage.HasValue)
+                        {
+                            <span class="oi oi-star" aria-hidden="true"></span>
+                            <span>@recentShow.RatingAverage.Value.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="show-details">
+                    @if (recentShow.Genres != null && recentShow.Genres.Any())
+                    {
+                        <div class="show-genres">
+                            @foreach (var genre in recentShow.Genres)
+                            {
+                                GenreType genreType = Enum.TryParse(genre.Replace(" ", ""), true, out GenreType parsed) ? parsed : GenreType.Unknown;
+                                <span class="genre-tag"
+                                      style="background-color:@TVShows.Utils.GenreColors.GetBackgroundColor(genreType);
+                                                                         border-color:@TVShows.Utils.GenreColors.GetBorderColor(genreType);">
+                                    @genre
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+                <button class="remove-from-recent-button" @onclick="(() => RemoveFromRecent(recentShow.Id))" title="@Localizer["RemoveRecentlyViewedShow"]">
+                    &times;
+                </button>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<CachedShow> recentShows = new List<CachedShow>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRecentShows();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadRecentShows();
+    }
+
+    private async Task LoadRecentShows()
+    {
+        recentShows = await RecentShowsService.GetRecentShowsAsync();
+        StateHasChanged();
+    }
+
+    private async Task RemoveFromRecent(int showId)
+    {
+        await RecentShowsService.RemoveShowFromRecentAsync(showId);
+        await LoadRecentShows();
+    }
+
+    public void Dispose()
+    {
+        
+    }
+}

@@ -1,0 +1,227 @@
+﻿@page "/show/{id:int}"
+@using System.Globalization
+@rendermode InteractiveServer
+
+<PageTitle>@show?.Name @Localizer["ShowDetails"] </PageTitle>
+
+@if (show == null)
+{
+    <p style="margin:1rem" class="loading-message">@Localizer["Loading"]</p>
+}
+else
+{
+    <div class="details-main-layout">
+        <div class="details-column-left">
+            <div class="header-with-details">
+                <h2 class="show-title-detail">@show.Name</h2>
+                <div class="rating-and-favorite-container">
+                    <button class="favorite-button-detail @(favoritedShowIds.Contains(show.Id) ? "favorited" : "")"
+                            @onclick="(() => ToggleFavorite(show))">
+                        <span class="oi oi-heart"></span>
+                    </button>
+                    @if (show.Rating?.Average.HasValue == true)
+                    {
+                        <span class="oi oi-star" aria-hidden="true"></span>
+                        <span class="rating-number-detail">@show.Rating.Average.Value.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)</span>
+                    }
+                </div>
+            </div>
+
+            <img src="@show.Image?.Original" alt="@show.Name" class="show-detail-image" />
+
+            @if (show.Genres != null && show.Genres.Any())
+            {
+                <div class="show-genres-detail">
+                    @foreach (var genre in show.Genres)
+                    {
+                        GenreType genreType = Enum.TryParse(genre.Replace(" ", ""), true, out GenreType parsed) ? parsed : GenreType.Unknown;
+                        <span class="genre-tag"
+                              style="background-color:@TVShows.Utils.GenreColors.GetBackgroundColor(genreType);
+                                                                                     border-color:@TVShows.Utils.GenreColors.GetBorderColor(genreType);">
+                            @genre
+                        </span>
+                    }
+                </div>
+            }
+
+            <div class="show-summary-detail">@((MarkupString)show.Summary)</div>
+        </div>
+
+        @if (seasons != null && seasons.Any())
+        {
+            <div class="seasons-column-right">
+                <h3 class="seasons-title">@Localizer["Seasons"]</h3>
+                <div class="seasons-list">
+                    @foreach (var season in seasons.OrderBy(s => s.Number))
+                    {
+                        <div class="season-card @(selectedSeasonId == season.Id ? "expanded" : "")">
+                            <div class="season-header" @onclick="(() => ToggleSeasonExpansion(season.Id))">
+                                <h4>@Localizer["Season"] @season.Number @(!string.IsNullOrEmpty(season.Name) ? $": {season.Name}" : "")</h4>
+                                <span class="expand-icon">
+                                    @(selectedSeasonId == season.Id ? "−" : "+")
+                                </span>
+                            </div>
+                            @if (selectedSeasonId == season.Id)
+                            {
+                                <div class="season-details-content">
+                                    @if (season.Image?.Medium != null)
+                                    {
+                                        <div class="image-container">
+                                            @if (seasonImagesLoading.GetValueOrDefault(season.Id) && !seasonImageLoadErrors.GetValueOrDefault(season.Id))
+                                            {
+                                                <div class="loading-spinner"></div>
+                                            }
+                                            @if (seasonImageLoadErrors.GetValueOrDefault(season.Id))
+                                            {
+                                                <div class="image-placeholder error-image">
+                                                    <span class="oi oi-warning" aria-hidden="true"></span>
+                                                    <span>@Localizer["ErrorLoadingImage"]</span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <img src="@season.Image.Medium" alt="Temporada @season.Number"
+                                                     class="season-image @(seasonImagesLoading.GetValueOrDefault(season.Id) ? "hidden" : "")"
+                                                     @onload="(() => SetImageLoaded(season.Id))"
+                                                     @onerror="(() => SetImageError(season.Id))" />
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="image-placeholder no-image">
+                                            <span>@Localizer["NoImageAvaliable"]</span>
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(season.Summary))
+                                    {
+                                        <div class="season-summary">@((MarkupString)season.Summary)</div>
+                                    }
+                                    @if (season.PremiereDate != null)
+                                    {
+                                        <p>@Localizer["PremiereDate"] @(DateTime.Parse(season.PremiereDate).ToString("dd/MM/yyyy"))</p>
+                                    }
+                                    @if (season.EndDate != null)
+                                    {
+                                        <p>@Localizer["EndDate"] @(DateTime.Parse(season.EndDate).ToString("dd/MM/yyyy"))</p>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        <a href="/shows" class="back-link-detail">@Localizer["BackWithSymbol"]</a>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Show? show;
+    private List<Season>? seasons;
+    private HashSet<int> favoritedShowIds = new HashSet<int>();
+    private int? selectedSeasonId = null;
+
+    private Dictionary<int, bool> seasonImagesLoading = new Dictionary<int, bool>();
+    private Dictionary<int, bool> seasonImageLoadErrors = new Dictionary<int, bool>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadShowDetails();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (show?.Id != id)
+        {
+            await LoadShowDetails();
+        }
+    }
+
+    private async Task LoadShowDetails()
+    {
+        show = await TvMazeService.GetShowByIdAsync(id);
+        seasons = await TvMazeService.GetSeasonsByShowIdAsync(id);
+
+        if (seasons != null)
+        {
+            foreach (var season in seasons)
+            {
+                if (season.Image?.Medium != null)
+                {
+                    seasonImagesLoading[season.Id] = true;
+                    seasonImageLoadErrors[season.Id] = false;
+                }
+            }
+        }
+
+        var favorites = await FavoriteService.GetFavoriteShowsAsync();
+        favoritedShowIds = new HashSet<int>(favorites.Select(f => f.Id));
+
+        if (show != null)
+        {
+            await RecentShowsService.AddShowToRecentAsync(show);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task ToggleFavorite(Show showToToggle)
+    {
+        if (favoritedShowIds.Contains(showToToggle.Id))
+        {
+            await FavoriteService.RemoveFavoriteShowAsync(showToToggle.Id);
+            favoritedShowIds.Remove(showToToggle.Id);
+        }
+        else
+        {
+            await FavoriteService.AddFavoriteShowAsync(showToToggle);
+            favoritedShowIds.Add(showToToggle.Id);
+        }
+        StateHasChanged();
+    }
+
+    private void ToggleSeasonExpansion(int seasonId)
+    {
+        if (selectedSeasonId == seasonId)
+        {
+            selectedSeasonId = null;
+        }
+        else
+        {
+            selectedSeasonId = seasonId;
+            if (seasons.Any(s => s.Id == seasonId && s.Image?.Medium != null))
+            {
+                if (!seasonImagesLoading.ContainsKey(seasonId) || !seasonImagesLoading[seasonId])
+                {
+                    seasonImagesLoading[seasonId] = true;
+                    seasonImageLoadErrors[seasonId] = false;
+                }
+            }
+        }
+        StateHasChanged();
+    }
+
+    private void SetImageLoaded(int seasonId)
+    {
+        if (seasonImagesLoading.ContainsKey(seasonId))
+        {
+            seasonImagesLoading[seasonId] = false;
+        }
+        StateHasChanged();
+    }
+
+    private void SetImageError(int seasonId)
+    {
+        if (seasonImagesLoading.ContainsKey(seasonId))
+        {
+            seasonImagesLoading[seasonId] = false;
+            seasonImageLoadErrors[seasonId] = true;
+        }
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,951 @@
+/* --- Base Styles --- */
+html, body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5;
+    color: #333;
+}
+
+a, .btn-link {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.2s ease-in-out;
+}
+
+    a:hover, .btn-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    color: #1c1c1c;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+    h1:focus {
+        outline: none;
+    }
+
+.page-title {
+    margin: 1rem 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.empty-message {
+    margin: 0 1rem;
+    font-size: 0.9em;
+    color: #666;
+}
+
+
+/* --- Button Styles --- */
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem rgba(255, 255, 255, 0.7), 0 0 0 0.25rem #007bff;
+}
+
+/* --- Form Styles --- */
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+.form-text {
+    font-size: 0.875em;
+    color: #6c757d;
+}
+
+.darker-border-checkbox.form-check-input {
+    border-color: #929292;
+}
+
+/* --- Validation Styles --- */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #28a745;
+}
+
+.invalid {
+    outline: 1px solid #dc3545;
+}
+
+.validation-message {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 0.25rem;
+}
+
+/* --- Layout: Sidebar --- */
+.sidebar {
+    background: #1c1c1c;
+    color: #b0b0b0;
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 1rem 0;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+    .sidebar .navbar-brand {
+        color: #fff;
+        font-size: 1.9rem;
+        font-weight: 700;
+        padding: 1rem 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 1rem;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        text-decoration: none;
+        display: block;
+    }
+
+    .sidebar .nav-menu {
+        flex-grow: 1;
+        padding-top: 0.5rem;
+    }
+
+    .sidebar .nav-link {
+        color: #b0b0b0;
+        padding: 0.9rem 1.5rem;
+        display: flex;
+        align-items: center;
+        font-size: 1.05rem;
+        text-decoration: none;
+        transition: background-color 0.25s, color 0.25s;
+    }
+
+        .sidebar .nav-link .oi {
+            margin-right: 0.8rem;
+            font-size: 1.2rem;
+            color: #aaaaaa;
+            transition: color 0.25s ease-in-out;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #333333;
+            color: #ffffff;
+        }
+
+            .sidebar .nav-link:hover .oi {
+                color: #ffffff;
+            }
+
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+            color: #ffffff;
+            font-weight: 600;
+            padding-left: 1.5rem;
+        }
+
+            .sidebar .nav-link.active .oi {
+                color: #ffffff;
+            }
+
+/* --- Layout: Content --- */
+.content {
+    padding-top: 1.5rem;
+    padding-left: 270px;
+    padding-right: 1.5rem;
+    min-height: 100vh;
+}
+
+/* --- Search --- */
+.search-container {
+    margin: 1rem;
+    max-width: 500px;
+}
+
+/* --- Show Grid --- */
+.show-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.show-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    padding-bottom: 0.75rem;
+    padding-top: 5px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.5s, transform 0.5s;
+}
+
+    .show-card.fading-out {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+        pointer-events: none;
+    }
+
+    .show-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .show-card img {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .show-card:hover .show-image-link img {
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+    .show-card a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+        .show-card a:hover h4 {
+            color: #007bff;
+        }
+
+    .show-card h4 {
+        margin: 0;
+        font-size: 1.15rem;
+        color: #333;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+        flex-grow: 1;
+        font-family: 'Poppins', sans-serif;
+    }
+
+.card-title-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 1rem 0.5rem;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+    .card-title-wrapper > a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-grow: 1;
+    }
+
+        .card-title-wrapper > a:hover h4 {
+            color: #007bff;
+        }
+
+.show-rating-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #495057;
+    padding-left: 0.5rem;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    z-index: 2;
+}
+
+    .show-rating-header .oi,
+    .show-rating-header .oi-star {
+        color: #ffc107;
+        font-size: 0.9rem;
+        vertical-align: middle;
+        line-height: 1;
+    }
+
+    .show-rating-header span {
+        line-height: 1;
+    }
+
+/* --- Favorite Button --- */
+.favorite-button {
+    z-index: 3;
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: color 0.2s, transform 0.2s;
+}
+
+    .favorite-button .oi-heart {
+        font-size: 1.1em;
+        color: #b0b0b0;
+    }
+
+    .favorite-button:hover .oi-heart {
+        color: #ff4500;
+        transform: scale(1.1);
+    }
+
+    .favorite-button.favorited .oi-heart {
+        color: #ff0000;
+    }
+
+/* --- Remove Recent Button --- */
+.remove-from-recent-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    color: #888;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+    z-index: 10;
+}
+
+    .remove-from-recent-button:hover {
+        background-color: #f00;
+        color: #fff;
+        border-color: #f00;
+        transform: scale(1.1);
+    }
+
+/* --- Genres --- */
+.genre-tag {
+    color: #FFF;
+    padding: 0.3em 0.8em;
+    border-radius: 5px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border: 1px solid;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+}
+
+    .genre-tag:hover {
+        filter: brightness(1.1);
+    }
+/* --- Show Card Details --- */
+.show-details {
+    padding: 0 0.75rem;
+    text-align: left;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    margin-top: auto;
+    font-family: 'Poppins', sans-serif;
+}
+
+.show-status-dates {
+    margin-bottom: 0.5rem;
+    font-size: 0.9em;
+    color: #555;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.show-genres {
+    margin-top: 0.8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+/* --- Details Page Container (Modified) --- */
+.details-container { /* This class will now only control the overall appearance, not layout */
+    max-width: 90%;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-family: 'Roboto', sans-serif;
+    /* Removed flex properties from here */
+    align-items: center;
+    text-align: center;
+}
+
+/* New layout for two columns */
+.details-main-layout {
+    display: flex;
+    gap: 2rem; /* Espaço entre as colunas */
+    max-width: 90%;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-family: 'Roboto', sans-serif;
+    align-items: flex-start; /* Alinha o conteúdo das colunas no topo */
+    text-align: center;
+}
+
+.details-column-left {
+    flex: 1; /* Ocupa o espaço disponível, ajuste conforme necessário */
+    min-width: 300px; /* Largura mínima para a coluna de detalhes */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza o conteúdo da coluna esquerda */
+}
+
+.seasons-column-right {
+    flex: 1.5; /* Ocupa mais espaço, ajuste conforme necessário */
+    min-width: 350px; /* Largura mínima para a coluna de temporadas */
+    display: flex;
+    flex-direction: column;
+    height: auto; /* Permite que o conteúdo defina a altura */
+    /*max-height: calc(100vh - 4rem);*/ /* Altura máxima da viewport menos margens para scroll */
+    overflow-y: auto; /* Adiciona scroll se o conteúdo exceder a altura */
+    padding-right: 15px; /* Espaço para a barra de rolagem */
+}
+
+/* Ensure images and content within columns adjust */
+.details-column-left .show-detail-image {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 1.5rem;
+}
+
+.seasons-column-right .seasons-list {
+    width: 100%; /* Garante que a lista de temporadas preencha a coluna */
+}
+
+.details-container img {
+    width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.details-container h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #1c1c1c;
+}
+
+.details-container p {
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
+}
+
+.details-container strong {
+    color: #007bff;
+}
+
+/* --- Header with Rating + Favorite --- */
+.header-with-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+.show-title-detail {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    color: #1c1c1c;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+    text-align: center;
+    width: 100%;
+}
+
+.rating-and-favorite-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 1rem;
+    justify-content: center;
+    width: 100%;
+}
+
+    .rating-and-favorite-container .oi-star {
+        color: #FFD700;
+    }
+
+.rating-number-detail {
+    color: #555;
+    font-size: 1em;
+}
+
+/* --- Favorite Button Detail Page --- */
+.favorite-button-detail {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 2rem;
+    color: #ccc;
+    transition: color 0.2s, transform 0.2s;
+    padding: 0;
+    line-height: 1;
+}
+
+    .favorite-button-detail:hover {
+        transform: scale(1.1);
+    }
+
+    .favorite-button-detail.favorited {
+        color: #e74c3c;
+    }
+
+        .favorite-button-detail.favorited:hover {
+            color: #c0392b;
+        }
+
+/* --- Show Image Detail --- */
+.show-detail-image {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    object-fit: cover;
+    margin-bottom: 1.5rem;
+}
+
+/* --- Genres + Summary --- */
+.show-genres-detail,
+.show-genres-detail-page {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 2rem;
+    justify-content: center;
+    width: 100%;
+}
+
+.show-summary-detail {
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 2rem;
+    text-align: justify;
+    width: 100%;
+    padding: 0 1rem;
+}
+
+    .show-summary-detail a {
+        color: #007bff;
+        text-decoration: underline;
+    }
+
+/* --- Meta Info --- */
+.show-meta-detail {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 1em;
+    color: #444;
+    line-height: 1.8;
+}
+
+    .show-meta-detail li {
+        display: flex;
+        align-items: center;
+        margin-bottom: 5px;
+    }
+
+    .show-meta-detail strong {
+        margin-right: 5px;
+        color: #333;
+    }
+
+    .show-meta-detail .oi {
+        margin-right: 8px;
+        color: #007bff;
+        font-size: 0.9em;
+    }
+
+    .show-meta-detail a {
+        color: #007bff;
+        text-decoration: none;
+    }
+
+        .show-meta-detail a:hover {
+            text-decoration: underline;
+        }
+
+/* --- Back Links --- */
+.back-to-shows,
+.back-link-detail {
+    display: inline-block;
+    margin-top: 2rem;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+    .back-to-shows:hover,
+    .back-link-detail:hover {
+        background-color: #0056b3;
+        transform: translateX(-5px);
+    }
+
+/* --- Loading --- */
+.loading-message {
+    margin: 2rem;
+    text-align: center;
+    font-size: 1.1em;
+    color: #666;
+}
+
+.loading-text {
+    margin: 1rem 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+
+/* --- Seasons --- */
+
+.seasons-title {
+    font-size: 2rem;
+    color: #333;
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
+    text-align: center;
+}
+
+.seasons-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0 1rem;
+}
+
+.season-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    position: relative;
+}
+
+    .season-card.expanded {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        border-color: #007bff;
+    }
+
+.season-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 25px;
+    background-color: #f5f7fa;
+    cursor: pointer;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2c3e50;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    border-bottom: 1px solid #eee;
+}
+
+    .season-header:hover {
+        background-color: #e9ecef;
+        color: #0056b3;
+    }
+
+    .season-header h4 {
+        margin: 0;
+        flex-grow: 1;
+        text-align: left;
+    }
+
+.expand-icon {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-left: 15px;
+    transition: transform 0.3s ease;
+}
+
+.season-card.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+.season-details-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+    padding: 0 25px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.season-card.expanded .season-details-content {
+    max-height: 1000px;
+    padding: 25px;
+}
+
+.image-container {
+    position: relative;
+    width: 250px;
+    height: 350px;
+    margin-bottom: 20px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.season-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+    transition: opacity 0.3s ease-in-out;
+}
+
+    .season-image.hidden {
+        opacity: 0;
+        position: absolute;
+        pointer-events: none;
+    }
+
+.loading-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    z-index: 1;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.image-placeholder {
+    width: 250px;
+    height: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+    text-align: center;
+    color: #888;
+    background-color: #e9ecef;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+    .image-placeholder.no-image {
+        background-color: #e0e0e0;
+    }
+
+    .image-placeholder.error-image {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .image-placeholder .oi {
+        font-size: 2em;
+        margin-bottom: 10px;
+    }
+
+.season-summary {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #555;
+    text-align: justify;
+    margin-bottom: 20px;
+}
+
+.season-details-content p {
+    margin-bottom: 8px;
+    font-size: 1rem;
+    color: #666;
+}
+
+/* --- Media Queries --- */
+@media (min-width: 768px) {
+    .show-header-detail {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .show-poster-detail {
+        width: 80%;
+        max-width: 300px;
+        margin-bottom: 1.5rem;
+    }
+
+    .show-info-detail {
+        min-width: unset;
+        width: 100%;
+        text-align: center;
+    }
+
+        .show-info-detail h1 {
+            font-size: 2rem;
+        }
+
+    .show-rating-header-detail,
+    .show-genres-detail-page,
+    .show-summary-detail,
+    .show-meta-detail {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .show-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 2rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .show-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 2.5rem;
+    }
+}
+
+@media (max-width: 992px) { /* Adjust breakpoint as needed */
+    .details-main-layout {
+        flex-direction: column; /* Empilha as colunas em telas menores */
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .details-column-left,
+    .seasons-column-right {
+        min-width: unset;
+        width: 100%;
+        max-height: unset; /* Remove max-height and overflow-y for stacked layout */
+        overflow-y: visible;
+        padding-right: 0;
+    }
+
+    .details-container {
+        padding: 1rem;
+    }
+
+    .show-title-detail {
+        font-size: 2rem;
+    }
+
+    .rating-and-favorite-container {
+        font-size: 1.1rem;
+    }
+
+    .favorite-button-detail {
+        font-size: 1.6rem;
+    }
+
+    .show-detail-image {
+        max-width: 100%;
+    }
+
+    .show-summary-detail {
+        padding: 0;
+    }
+
+    .season-header {
+        font-size: 1.1rem;
+        padding: 15px 20px;
+    }
+
+    .season-details-content {
+        padding: 15px 20px;
+    }
+
+    .image-container, .image-placeholder {
+        width: 180px;
+        height: 250px;
+    }
+}
